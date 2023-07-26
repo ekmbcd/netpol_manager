@@ -1,0 +1,53 @@
+[
+  {
+    "name": "netpol-controller-7696d99fff-4kl2z",
+    "namespace": "default",
+    "uid": "5197e1ae-b007-4d54-8ff4-495b1352f359",
+    "labels": {
+      "app": "netpol-controller",
+      "test": "test-label"
+    },
+    "ownerReferences": [
+      {
+        "kind": "ReplicaSet",
+        "name": "netpol-controller-7696d99fff",
+        "uid": "9fa96c15-2fbd-4368-8b52-8ef56b437f39"
+      }
+    ]
+  },
+  {
+    "name": "nginx2",
+    "namespace": "default",
+    "uid": "aee27bf3-fc69-4824-934f-banana",
+    "labels": {
+      "app": "nginx",
+      "test": "test-label"
+    }
+  },
+  {
+    "name": "nginx3",
+    "namespace": "default",
+    "uid": "aee27bf3-fc69-4824-934f-lucertola",
+    "labels": {
+      "app": "nginx",
+      "test": "test-label"
+    }
+  },
+  {
+    "name": "nginx4",
+    "namespace": "default",
+    "uid": "aee27bf3-fc69-4824-934f-elefante",
+    "labels": {
+      "app": "nginx"
+    }
+  },
+  {
+    "name": "nginx5",
+    "namespace": "test-ns",
+    "uid": "aee27bf3-fc69-4824-934f-pomodoro",
+    "labels": {
+      "app": "nginx",
+      "test": "test-label"
+    }
+  }
+]

@@ -1,0 +1,247 @@
+import {
+  IPBlock,
+  MatchExpression,
+  Namespace,
+  NetworkPolicy,
+  Operator,
+  Pod,
+  PodNetpol,
+  PodReference,
+  Policy,
+  PolicyType,
+  Selector,
+  WithLabels,
+} from "../types";
+import { isIPBlock, isNamespaceSelector, isPodSelector } from "./predicates";
+
+/*
+  - create pods with null ingress and egress
+
+  - for each netpol:
+    - find list of pods that match the podSelector
+      - check if matchLabels or matchExpressions
+    - for each ingress policy:
+      - set ports
+      - for each policy:
+        - understand the type of policy
+          - find all pods that match the policy for podSelector
+            (filter pods in the same namespace, then labels)
+          - find all pods that match the policy for ipBlock
+            (understand cidr and except)
+          - find all pods that match the policy for namespaceSelector
+            (find all pods in namespace with labels)
+            (if podSelector is also present, filter by labels)
+        - add all pods to ingress
+        - same for egress
+
+  - collapse pods into deployments
+  - group deployments by namespace
+*/
+
+export function parsePods(
+  pods: Pod[],
+  netpols: NetworkPolicy[],
+  namespaces: Namespace[]
+) {
+  try {
+    // consider pods that are part of a replica set as a single pod
+    const filteredPods = filterReplicaSets(pods);
+
+    const parsedPods: PodNetpol[] = pods.map((pod) => {
+      const podNetpol: PodNetpol = pod;
+
+      // only consider netpols in the same namespace
+      const filteredNetpols = netpols.filter(
+        (netpol) => netpol.metadata.namespace === pod.namespace
+      );
+      for (const netpol of filteredNetpols) {
+        // if the pod is not selected, skip
+        if (!isPodSelected(netpol.spec.podSelector, pod)) {
+          continue;
+        }
+
+        // INGRESS
+        if (netpol.spec.policyTypes.includes(PolicyType.Ingress)) {
+          // if ingress is not defined, all traffic is allowed
+          if (!podNetpol.ingress) {
+            podNetpol.ingress = [];
+          }
+          // in this case all traffic is restricted
+          if (!netpol.spec.ingress) {
+            continue;
+          }
+          // network policies are additive (we add more allowed pods)
+          for (const ingressPolicy of netpol.spec.ingress) {
+            // there is an array of policies, we need to check all of them
+            for (const policy of ingressPolicy.from) {
+              // TODO: manage ports
+              podNetpol.ingress.push(
+                ...selectPodsFromPolicy(
+                  policy,
+                  // remove the current pod and pods already allowed from the list of pods
+                  removePodsFromList(filteredPods, [pod, ...podNetpol.ingress]),
+                  namespaces,
+                  netpol.metadata.namespace
+                )
+              );
+            }
+          }
+        }
+
+        // TODO: EGRESS (same as ingress)
+      }
+      return podNetpol;
+    });
+    return parsedPods;
+  } catch (err) {
+    console.error("parse pods fail!", err);
+  }
+}
+
+function filterReplicaSets(pods: Pod[]) {
+  // TODO
+  return pods;
+}
+
+function isPodSelected(selector: Selector, pod: Pod) {
+  return selectElementsFromSelector(selector, [pod]).length > 0;
+}
+
+// returns all selected pods from a policy
+function selectPodsFromPolicy(
+  netpol: Policy,
+  pods: Pod[],
+  namespaces: Namespace[],
+  netpolNamespace: string
+) {
+  const selectedPods: PodNetpol[] = [];
+  if (isPodSelector(netpol)) {
+    selectedPods.push(
+      ...selectElementsFromSelector(
+        netpol.podSelector,
+        // only consider pods in the same namespace
+        pods.filter((pod) => pod.namespace === netpolNamespace)
+      )
+    );
+  } else if (isIPBlock(netpol)) {
+    selectedPods.push(...selectPodsFromIPBlock(netpol.ipBlock, pods));
+  } else if (isNamespaceSelector(netpol)) {
+    selectedPods.push(
+      ...selectPodsFromNamespaceSelector(
+        netpol.namespaceSelector,
+        pods,
+        namespaces
+      )
+    );
+  } else {
+    console.warn("selectPodsFromPolicy - unknown policy type", netpol);
+  }
+  return selectedPods.map((pod) => {
+    return {
+      name: pod.name,
+      namespace: pod.namespace,
+      uid: pod.uid,
+    };
+  });
+}
+
+// returns all selected elements from a selector
+function selectElementsFromSelector<T extends WithLabels>(
+  selector: Selector,
+  elements: T[]
+) {
+  let selectedElements: T[] | undefined = undefined;
+
+  // all selectors are ANDed together
+  if (selector.matchLabels) {
+    selectedElements = selectFromLabels(selector.matchLabels, elements);
+  }
+
+  if (selector.matchExpressions) {
+    // there is an array of expressions, we need to check all of them
+    for (const expression of selector.matchExpressions) {
+      // first selector, no need to filter
+      if (!selectedElements) {
+        selectedElements = selectFromExpression(expression, elements);
+      } else {
+        // filter selected pods
+        selectedElements = selectFromExpression(expression, selectedElements);
+      }
+    }
+  }
+
+  // empty selector, all pods are selected
+  if (!selectedElements) {
+    selectedElements = elements;
+  }
+  return selectedElements;
+}
+
+// returns a list of pods that do not match the list of pods to remove
+function removePodsFromList(pods: Pod[], podsToRemove: PodReference[] | Pod[]) {
+  return pods.filter((pod) => {
+    return !podsToRemove.find((podToRemove) => podToRemove.uid === pod.uid);
+  });
+}
+
+function selectPodsFromIPBlock(ipBlock: IPBlock, pods: Pod[]) {
+  console.log("selectPodsFromIPBlock", ipBlock, pods);
+  // TODO: decide what to do
+  // pods ip are ephemeral, so we can't really check if they are in the ip block
+  return [];
+}
+
+function selectPodsFromNamespaceSelector(
+  selector: Selector,
+  pods: Pod[],
+  namespaces: Namespace[]
+) {
+  // find all namespaces that match the selector
+  const selectedNamespaces = selectElementsFromSelector(selector, namespaces);
+  // find all pods that are in the selected namespaces
+  const selectedPods = pods.filter((pod) => {
+    return selectedNamespaces.find(
+      (namespace) => namespace.name === pod.namespace
+    );
+  });
+  // if there is a pod selector, filter pods by labels
+  if (selector.matchLabels) {
+    return selectElementsFromSelector(selector, selectedPods);
+  }
+  return selectedPods;
+}
+
+function selectFromLabels<T extends WithLabels>(
+  labels: Record<string, string>,
+  elements: T[]
+) {
+  return elements.filter((element) => {
+    return Object.entries(labels).every(([key, value]) => {
+      return element.labels[key] === value;
+    });
+  });
+}
+
+function selectFromExpression<T extends WithLabels>(
+  expression: MatchExpression,
+  elements: T[]
+) {
+  switch (expression.operator) {
+    case Operator.In:
+      return elements.filter((element) => {
+        return expression.values?.includes(element.labels[expression.key]);
+      });
+    case Operator.NotIn:
+      return elements.filter((element) => {
+        return !expression.values?.includes(element.labels[expression.key]);
+      });
+    case Operator.Exists:
+      return elements.filter((element) => {
+        return element.labels[expression.key] !== undefined;
+      });
+    case Operator.DoesNotExist:
+      return elements.filter((element) => {
+        return element.labels[expression.key] === undefined;
+      });
+  }
+}

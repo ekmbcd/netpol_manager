@@ -1,0 +1,62 @@
+[
+  {
+    "metadata": {
+      "name": "test-network-policy-2",
+      "namespace": "default"
+    },
+    "spec": {
+      "podSelector": {
+        "matchLabels": {
+          "app": "nginx",
+          "test": "test-label"
+        }
+      },
+      "policyTypes": ["Ingress"],
+      "ingress": [
+        {
+          "from": [
+            {
+              "podSelector": {
+                "matchLabels": {
+                  "app": "nginx"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metadata": {
+      "name": "test-network-policy-3",
+      "namespace": "default"
+    },
+    "spec": {
+      "podSelector": {
+        "matchLabels": {
+          "role": "db"
+        }
+      },
+      "policyTypes": ["Ingress"],
+      "ingress": [
+        {
+          "ports": [
+            {
+              "protocol": "TCP",
+              "port": 6379
+            }
+          ],
+          "from": [
+            {
+              "ipBlock": {
+                "cidr": "172.17.0.0/16",
+                "except": ["172.17.1.0/24"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+]
