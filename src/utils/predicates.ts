@@ -1,4 +1,11 @@
-import { IPBlock, MatchExpression, Policy, Selector } from "../types";
+import {
+  IPBlock,
+  NamespaceSelector,
+  PodBase,
+  PodReference,
+  Policy,
+  Selector,
+} from "../types";
 
 // type predicates are a type assertion that checks if an object
 // has a specific property or set of properties
@@ -15,8 +22,10 @@ export function isIPBlock(policy: Policy): policy is { ipBlock: IPBlock } {
 
 export function isNamespaceSelector(
   policy: Policy
-): policy is { namespaceSelector: Selector } {
-  return (
-    (policy as { namespaceSelector: Selector }).namespaceSelector !== undefined
-  );
+): policy is NamespaceSelector {
+  return (policy as NamespaceSelector).namespaceSelector !== undefined;
+}
+
+export function isPodBase(podReference: PodReference): podReference is PodBase {
+  return (podReference as PodBase).uid !== undefined;
 }

@@ -1,11 +1,12 @@
 [
   {
-    "name": "netpol-controller-7696d99fff-4kl2z",
+    "name": "1-ingress-blocked",
     "namespace": "default",
     "uid": "5197e1ae-b007-4d54-8ff4-495b1352f359",
     "labels": {
-      "app": "netpol-controller",
-      "test": "test-label"
+      "ingress": "block",
+      "pod": "1",
+      "app": "nginx"
     },
     "ownerReferences": [
       {
@@ -16,38 +17,46 @@
     ]
   },
   {
-    "name": "nginx2",
+    "name": "2-single-ingress",
     "namespace": "default",
     "uid": "aee27bf3-fc69-4824-934f-banana",
     "labels": {
       "app": "nginx",
-      "test": "test-label"
+      "pod": "2"
     }
   },
   {
-    "name": "nginx3",
+    "name": "3-multiple-ingress",
     "namespace": "default",
     "uid": "aee27bf3-fc69-4824-934f-lucertola",
     "labels": {
       "app": "nginx",
-      "test": "test-label"
+      "test": "test-label",
+      "pod": "3"
     }
   },
   {
-    "name": "nginx4",
+    "name": "4-nginx4",
     "namespace": "default",
     "uid": "aee27bf3-fc69-4824-934f-elefante",
     "labels": {
-      "app": "nginx"
+      "app": "nginx",
+      "pod": "4"
     }
   },
   {
-    "name": "nginx5",
+    "name": "5-external-pod",
     "namespace": "test-ns",
     "uid": "aee27bf3-fc69-4824-934f-pomodoro",
     "labels": {
       "app": "nginx",
-      "test": "test-label"
+      "test": "test-label",
+      "pod": "5"
     }
+  },
+  {
+    "name": "6-external-pod-no-labels",
+    "namespace": "test-ns",
+    "uid": "aee27bf3-fc69-4824-934f-anguria"
   }
 ]

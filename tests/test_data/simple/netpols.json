@@ -1,41 +1,28 @@
 [
   {
     "metadata": {
-      "name": "test-network-policy-2",
+      "name": "block-ingress",
       "namespace": "default"
     },
     "spec": {
       "podSelector": {
         "matchLabels": {
-          "app": "nginx",
-          "test": "test-label"
+          "ingress": "block"
         }
       },
-      "policyTypes": ["Ingress"],
-      "ingress": [
-        {
-          "from": [
-            {
-              "podSelector": {
-                "matchLabels": {
-                  "app": "nginx"
-                }
-              }
-            }
-          ]
-        }
-      ]
+      "policyTypes": ["Ingress"]
     }
   },
+
   {
     "metadata": {
-      "name": "test-network-policy-3",
+      "name": "one-to-one-ingress",
       "namespace": "default"
     },
     "spec": {
       "podSelector": {
         "matchLabels": {
-          "role": "db"
+          "pod": "2"
         }
       },
       "policyTypes": ["Ingress"],
@@ -49,9 +36,60 @@
           ],
           "from": [
             {
-              "ipBlock": {
-                "cidr": "172.17.0.0/16",
-                "except": ["172.17.1.0/24"]
+              "podSelector": {
+                "matchLabels": {
+                  "pod": "1"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  {
+    "metadata": {
+      "name": "multiple-ingress",
+      "namespace": "default"
+    },
+    "spec": {
+      "podSelector": {
+        "matchLabels": {
+          "pod": "3"
+        }
+      },
+      "policyTypes": ["Ingress"],
+      "ingress": [
+        {
+          "ports": [
+            {
+              "protocol": "UDP",
+              "port": 6379
+            },
+            {
+              "protocol": "TCP",
+              "port": 6380
+            }
+          ],
+          "from": [
+            {
+              "namespaceSelector": {
+                "matchLabels": {
+                  "kubernetes.io/metadata.name": "test-ns"
+                }
+              },
+              "podSelector": {
+                "matchLabels": {
+                  "app": "nginx"
+                }
+              }
+            },
+            {
+              "podSelector": {
+                "matchLabels": {
+                  "app": "nginx"
+                }
               }
             }
           ]

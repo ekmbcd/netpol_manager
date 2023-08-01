@@ -6,13 +6,17 @@ export type OwnerReference = {
   uid: string;
 };
 
-export type PodReference = {
+export type PodBase = {
   name: string;
   namespace: string;
   uid: string;
 };
 
-export type Pod = PodReference & {
+export type PodReference = {
+  ports?: Port[];
+} & (PodBase | IPBlock);
+
+export type Pod = PodBase & {
   labels: Record<string, string>;
   ownerReferences?: OwnerReference[];
 };
@@ -61,10 +65,12 @@ export type Policy =
   | {
       ipBlock: IPBlock;
     }
-  | {
-      namespaceSelector: Selector;
-      podSelector?: Selector;
-    };
+  | NamespaceSelector;
+
+export type NamespaceSelector = {
+  namespaceSelector: Selector;
+  podSelector?: Selector;
+};
 
 export type IngressPolicy = {
   ports?: Port[];
