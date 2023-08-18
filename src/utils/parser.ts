@@ -52,9 +52,6 @@ export function parsePods(
   namespaces: Namespace[]
 ) {
   try {
-    // consider pods that are part of a replica set as a single pod
-    const filteredPods = filterReplicaSets(pods);
-
     const parsedPods: PodNetpol[] = pods.map((pod) => {
       const podNetpol: PodNetpol = pod;
 
@@ -62,6 +59,10 @@ export function parsePods(
       const filteredNetpols = netpols.filter(
         (netpol) => netpol.metadata.namespace === pod.namespace
       );
+
+      // remove self from list of pods
+      const filteredPods = removePodsFromList(pods, [pod]);
+
       for (const netpol of filteredNetpols) {
         // if the pod is not selected, skip
         if (!isPodSelected(netpol.spec.podSelector, pod)) {
@@ -70,7 +71,7 @@ export function parsePods(
 
         // INGRESS
         if (netpol.spec.policyTypes.includes(PolicyType.Ingress)) {
-          // if ingress is not defined, all traffic is allowed
+          // if ingress is undefined, all traffic is allowed
           if (!podNetpol.ingress) {
             podNetpol.ingress = [];
           }
@@ -78,26 +79,21 @@ export function parsePods(
           if (!netpol.spec.ingress) {
             continue;
           }
-          // network policies are additive (we add more allowed pods)
-          for (const ingressPolicy of netpol.spec.ingress) {
-            // there is an array of policies, we need to check all of them
-            for (const policy of ingressPolicy.from) {
-              // TODO: manage ports
-              podNetpol.ingress.push(
-                ...selectPodsFromPolicy(
-                  policy,
-                  // remove the current pod and pods already allowed from the list of pods
-                  removePodsFromList(filteredPods, [pod, ...podNetpol.ingress]),
-                  namespaces,
-                  netpol.metadata.namespace,
-                  ingressPolicy.ports
-                )
-              );
-            }
-          }
+          fillPodIngress(netpol, podNetpol.ingress, filteredPods, namespaces);
         }
 
-        // TODO: EGRESS (same as ingress)
+        // EGRESS (same as ingress)
+        if (netpol.spec.policyTypes.includes(PolicyType.Egress)) {
+          // if egress is undefined, all traffic is allowed
+          if (!podNetpol.egress) {
+            podNetpol.egress = [];
+          }
+          // in this case all traffic is restricted
+          if (!netpol.spec.egress) {
+            continue;
+          }
+          fillPodEgress(netpol, podNetpol.egress, filteredPods, namespaces);
+        }
       }
       return podNetpol;
     });
@@ -107,9 +103,53 @@ export function parsePods(
   }
 }
 
-function filterReplicaSets(pods: Pod[]) {
-  // TODO
-  return pods;
+// fill connections with all pods that match the selected ingress policy
+export function fillPodIngress(
+  netpol: NetworkPolicy,
+  connections: PodReference[],
+  pods: Pod[],
+  namespaces: Namespace[]
+) {
+  // network policies are additive (we add more allowed pods)
+  for (const ingressPolicy of netpol.spec.ingress!) {
+    // there is an array of policies, we need to check all of them
+    for (const policy of ingressPolicy.from) {
+      connections.push(
+        ...selectPodsFromPolicy(
+          policy,
+          // remove pods already allowed from the list of pods
+          removePodsFromList(pods, [...connections]),
+          namespaces,
+          netpol.metadata.namespace,
+          ingressPolicy.ports
+        )
+      );
+    }
+  }
+}
+
+export function fillPodEgress(
+  netpol: NetworkPolicy,
+  connections: PodReference[],
+  pods: Pod[],
+  namespaces: Namespace[]
+) {
+  // network policies are additive (we add more allowed pods)
+  for (const ingressPolicy of netpol.spec.egress!) {
+    // there is an array of policies, we need to check all of them
+    for (const policy of ingressPolicy.to) {
+      connections.push(
+        ...selectPodsFromPolicy(
+          policy,
+          // remove pods already allowed from the list of pods
+          removePodsFromList(pods, [...connections]),
+          namespaces,
+          netpol.metadata.namespace,
+          ingressPolicy.ports
+        )
+      );
+    }
+  }
 }
 
 function isPodSelected(selector: Selector, pod: Pod) {
@@ -117,7 +157,7 @@ function isPodSelected(selector: Selector, pod: Pod) {
 }
 
 // returns all selected pods from a policy
-function selectPodsFromPolicy(
+export function selectPodsFromPolicy(
   netpol: Policy,
   pods: Pod[],
   namespaces: Namespace[],
@@ -147,8 +187,8 @@ function selectPodsFromPolicy(
   return selectedPods;
 }
 
-//
-function selectPodReferencesFromSelector(
+// returns all selected pods from a selector
+export function selectPodReferencesFromSelector(
   selector: Selector,
   pods: Pod[],
   ports?: Port[]
@@ -276,22 +316,33 @@ function selectFromExpression<T extends WithLabels>(
   expression: MatchExpression,
   elements: T[]
 ) {
-  switch (expression.operator) {
-    case Operator.In:
-      return elements.filter((element) => {
-        return expression.values?.includes(element.labels[expression.key]);
-      });
-    case Operator.NotIn:
-      return elements.filter((element) => {
-        return !expression.values?.includes(element.labels[expression.key]);
-      });
-    case Operator.Exists:
-      return elements.filter((element) => {
-        return element.labels[expression.key] !== undefined;
-      });
-    case Operator.DoesNotExist:
-      return elements.filter((element) => {
-        return element.labels[expression.key] === undefined;
-      });
+  try {
+    switch (expression.operator) {
+      case Operator.In:
+        return elements.filter((element) => {
+          return expression.values?.includes(element.labels[expression.key]);
+        });
+      case Operator.NotIn:
+        return elements.filter((element) => {
+          return !expression.values?.includes(element.labels[expression.key]);
+        });
+      case Operator.Exists:
+        return elements.filter((element) => {
+          return element.labels[expression.key] !== undefined;
+        });
+      case Operator.DoesNotExist:
+        return elements.filter((element) => {
+          return element.labels[expression.key] === undefined;
+        });
+    }
+  } catch (e) {
+    // TODO: what to do in this case?
+    // - namespaceSelector:
+    //     matchExpressions:
+    //     - key: namespace
+    //       operator: In
+    //       values: ["frontend", "backend"]
+    console.error("selectFromExpression", expression, elements, e);
+    return [];
   }
 }

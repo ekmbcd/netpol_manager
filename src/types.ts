@@ -1,4 +1,5 @@
 // ------------- PARSER TYPES ---------------- //
+import { XYPosition } from "reactflow";
 
 export type OwnerReference = {
   kind: string;
@@ -95,6 +96,11 @@ export type NetworkPolicy = {
   };
 };
 
+export type NetworkPolicyFull = {
+  apiVersion: string;
+  kind: string;
+} & NetworkPolicy;
+
 export type WithLabels = {
   labels: Record<string, string>;
 };
@@ -105,3 +111,12 @@ export enum Operator {
   Exists = "Exists",
   DoesNotExist = "DoesNotExist",
 }
+
+// ------------- FLOW TYPES ---------------- //
+
+export type CustomNode = {
+  id: string;
+  positionAbsolute: XYPosition;
+  width: number;
+  height: number;
+};

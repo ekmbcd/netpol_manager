@@ -1,0 +1,35 @@
+[
+  {
+    "name": "default",
+    "uid": "151c024e-6613-4e43-8eea-c2e9556d47b4",
+    "labels": {
+      "kubernetes.io/metadata.name": "default"
+    }
+  },
+  {
+    "name": "kube-node-lease",
+    "uid": "489cf974-94c0-4033-b9e1-26620c5e5c20",
+    "labels": {
+      "kubernetes.io/metadata.name": "kube-node-lease"
+    }
+  },
+  {
+    "name": "kube-public",
+    "uid": "d0c8b6ee-f2b9-43a8-8f6a-b2ff8784f05d",
+    "labels": {
+      "kubernetes.io/metadata.name": "kube-public"
+    }
+  },
+  {
+    "name": "test-ns",
+    "uid": "ad83537b-d489-4e2b-a2e7-2832423b5bad",
+    "labels": {
+      "kubernetes.io/metadata.name": "test-ns",
+      "lala": "land"
+    }
+  },
+  {
+    "name": "test-ns-2",
+    "uid": "ad83537b-d489-4e2b-a2e7-2832423b5bads"
+  }
+]
