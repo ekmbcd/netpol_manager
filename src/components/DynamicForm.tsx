@@ -12,6 +12,7 @@ import { Separator } from "./ui/separator";
 
 function DynamicForm() {
   const setNewNetpol = useClusterStore((state) => state.setNewNetpol);
+  const postNetpol = useClusterStore((state) => state.postNetpol);
   const newNetpol = useClusterStore((state) => state.newNetpol);
 
   const methods = useForm<NetworkPolicyFull>({
@@ -44,7 +45,12 @@ function DynamicForm() {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit((data) => console.log(data))}>
+      <form
+        onSubmit={methods.handleSubmit((data) => {
+          console.log(data);
+          postNetpol();
+        })}
+      >
         <MetadataForm />
 
         <div className="pl-2 border-l-2 border-slate-300 mb-4">

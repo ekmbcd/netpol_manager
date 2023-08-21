@@ -7,27 +7,17 @@ import TabsButton from "./components/TabsButton";
 import ClusterDisplay from "./components/displays/ClusterDisplay";
 import NetpolDisplay from "./components/displays/NetpolDisplay";
 import PodDisplay from "./components/displays/PodDisplay";
-import simpleNamespacesJSON from "./namespaces.json";
-import simbleNetpolsJSON from "./netpols.json";
 import { View, useClusterStore } from "./store/clusterStore";
-import testData from "./test";
-import { Namespace, NetworkPolicy, PodNetpol } from "./types";
 
 function App() {
-  const setPods = useClusterStore((state) => state.setPods);
-  const setNamespaces = useClusterStore((state) => state.setNamespaces);
-  const setNetworkPolicies = useClusterStore(
-    (state) => state.setNetworkPolicies
+  const getDataFromCluster = useClusterStore(
+    (state) => state.getDataFromCluster
   );
   const view = useClusterStore((state) => state.selectedView);
   const setSelectedView = useClusterStore((state) => state.setSelectedView);
 
   useEffect(() => {
-    // TODO: change this to a real API call
-    const data = testData as PodNetpol[];
-    setPods(data);
-    setNamespaces(simpleNamespacesJSON as Namespace[]);
-    setNetworkPolicies(simbleNetpolsJSON as unknown as NetworkPolicy[]);
+    getDataFromCluster();
   }, []);
 
   return (

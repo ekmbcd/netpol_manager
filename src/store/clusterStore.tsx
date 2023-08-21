@@ -1,3 +1,5 @@
+import routes from "@/api/routes";
+import { parsePods } from "@/utils/parser";
 import { Edge } from "reactflow";
 import { create } from "zustand";
 import {
@@ -38,6 +40,9 @@ type ClusterStore = {
   setSelectedNetpol: (netpol: NetworkPolicy | null) => void;
   setSelectedView: (view: View) => void;
   setNewNetpol: (netpol: NetworkPolicyFull) => void;
+
+  getDataFromCluster: () => void;
+  postNetpol: () => void;
 };
 
 // TODO: divide type in state and actions
@@ -116,4 +121,28 @@ export const useClusterStore = create<ClusterStore>()((set, get) => ({
     }
   },
   setNewNetpol: (netpol) => set({ newNetpol: netpol }),
+
+  getDataFromCluster: async () => {
+    const [pods, namespaces, netpols] = await Promise.all([
+      routes.getPods(),
+      routes.getNamespaces(),
+      routes.getNetpols(),
+    ]);
+
+    set({
+      pods: parsePods(pods, netpols, namespaces),
+      namespaces,
+      networkPolicies: netpols,
+      edges: generateClusterEdges(pods),
+      namespacesColorsMap: generateNamespacesColorMap(namespaces),
+    });
+  },
+
+  postNetpol: async () => {
+    const newNetpol = get().newNetpol;
+    const response = await routes.postNetpol(newNetpol);
+    if (response) {
+      get().getDataFromCluster();
+    }
+  },
 }));
