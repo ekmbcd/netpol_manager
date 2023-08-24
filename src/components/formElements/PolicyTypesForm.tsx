@@ -1,5 +1,4 @@
 import { NetworkPolicyFull, PolicyType } from "@/types";
-import { Label } from "@radix-ui/react-label";
 import { useFormContext } from "react-hook-form";
 import { Checkbox } from "../ui/checkbox";
 
@@ -26,24 +25,34 @@ function PolicyTypesForm() {
   return (
     <div className="pl-2 border-l-2 border-slate-300 mb-4">
       <h3 className="font-semibold text-slate-900 pb-2">Policy types</h3>
-      <div className="p-2">
-        <Label className="mr-4 cursor-pointer">
+      <div className="flex gap-6 py-1">
+        <div className="flex items-center space-x-2">
           <Checkbox
-            className="mr-1"
+            id="ingress-checkbox"
             checked={isSelected(PolicyType.Ingress)}
             onCheckedChange={() => onChange(PolicyType.Ingress)}
           />
-          Ingress
-        </Label>
+          <label
+            htmlFor="ingress-checkbox"
+            className="text-sm font-medium leading-none cursor-pointer select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Ingress
+          </label>
+        </div>
 
-        <Label className="cursor-pointer">
+        <div className="flex items-center space-x-2">
           <Checkbox
-            className="mr-1"
+            id="egress-checkbox"
             checked={isSelected(PolicyType.Egress)}
             onCheckedChange={() => onChange(PolicyType.Egress)}
           />
-          Egress
-        </Label>
+          <label
+            htmlFor="egress-checkbox"
+            className="text-sm font-medium leading-none cursor-pointer select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Egress
+          </label>
+        </div>
       </div>
     </div>
   );

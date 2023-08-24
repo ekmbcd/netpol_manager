@@ -1,21 +1,40 @@
-import { Input, InputProps } from "../ui/input";
+import { forwardRef } from "react";
+import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import Autocomplete from "./Autocomplete";
 
 type InputWithLabelProps = {
   label: string;
-  type?: string;
-  props?: InputProps & React.RefAttributes<HTMLInputElement>;
+  onBlur?: (e: any) => void;
+  onChange: (...event: any[]) => void;
+  options?: string[];
+  value: string | number;
 };
 
-function InputWithLabel({ label, props, type = "text" }: InputWithLabelProps) {
-  return (
-    <div className="pb-2">
-      <Label>
-        {label}
-        <Input type={type} {...props} />
-      </Label>
-    </div>
-  );
-}
+// need to forward ref to input
+const InputWithLabel = forwardRef(
+  (
+    { options, label, value, ...props }: InputWithLabelProps,
+    ref: React.Ref<HTMLInputElement>
+  ) => {
+    return (
+      <div className="pb-1">
+        <Label>
+          {label}
+          {options ? (
+            <Autocomplete
+              options={options}
+              ref={ref}
+              value={value as string}
+              {...props}
+            />
+          ) : (
+            <Input value={value} {...props} ref={ref} />
+          )}
+        </Label>
+      </div>
+    );
+  }
+);
 
 export default InputWithLabel;

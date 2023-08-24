@@ -1,7 +1,11 @@
-import { NetworkPolicyFull } from "@/types";
-import { UseFormGetValues, UseFormSetValue } from "react-hook-form";
+import {
+  MatchExpression,
+  NetworkPolicyFull,
+  Operator,
+  SelectorType,
+} from "@/types";
+import { FieldPath, UseFormGetValues, UseFormSetValue } from "react-hook-form";
 
-// TODO: delete this?
 export function addIngressRule(
   getValues: UseFormGetValues<NetworkPolicyFull>,
   setValue: UseFormSetValue<NetworkPolicyFull>
@@ -37,12 +41,74 @@ export function removePort(
   parentIndex: number,
   portIndex: number
 ) {
-  console.log("before", getValues(`spec.${type}.${parentIndex}.ports`));
   setValue(
     `spec.${type}.${parentIndex}.ports`,
     (getValues(`spec.${type}.${parentIndex}.ports`) || []).filter(
       (_, index) => index !== portIndex
     )
   );
-  console.log("after", getValues(`spec.${type}.${parentIndex}.ports`));
+}
+
+export function addLabel(
+  labels: Record<string, string>,
+  setValue: UseFormSetValue<NetworkPolicyFull>,
+  path: FieldPath<NetworkPolicyFull>
+) {
+  const temp = { ...labels };
+  temp[""] = "";
+  setValue(path, temp);
+}
+
+export function removeLabel(
+  labels: Record<string, string>,
+  setValue: UseFormSetValue<NetworkPolicyFull>,
+  path: FieldPath<NetworkPolicyFull>,
+  key: string
+) {
+  const temp = { ...labels };
+  delete temp[key];
+  setValue(path, temp);
+}
+
+export function changeSelector(
+  selectorType: SelectorType,
+  path: FieldPath<NetworkPolicyFull>,
+  setValue: UseFormSetValue<NetworkPolicyFull>
+) {
+  if (selectorType === SelectorType.MatchLabels) {
+    setValue(path, {
+      matchLabels: {},
+    });
+  } else {
+    setValue(path, {
+      matchExpressions: [],
+    });
+  }
+}
+
+export function addMatchExpression(
+  expressions: MatchExpression[],
+  setValue: UseFormSetValue<NetworkPolicyFull>,
+  path: FieldPath<NetworkPolicyFull>
+) {
+  setValue(path, [
+    ...expressions,
+    {
+      key: "",
+      operator: Operator.In,
+      values: [],
+    },
+  ]);
+}
+
+export function removeMatchExpression(
+  expressions: MatchExpression[],
+  setValue: UseFormSetValue<NetworkPolicyFull>,
+  path: FieldPath<NetworkPolicyFull>,
+  index: number
+) {
+  setValue(
+    path,
+    expressions.filter((_, i) => i !== index)
+  );
 }

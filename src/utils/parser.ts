@@ -346,3 +346,21 @@ function selectFromExpression<T extends WithLabels>(
     return [];
   }
 }
+
+export function parseLabels(elements: WithLabels[]) {
+  const labels: Record<string, string[]> = {};
+  for (const element of elements) {
+    if (!element.labels) {
+      continue;
+    }
+    for (const [key, value] of Object.entries(element.labels)) {
+      if (!labels[key]) {
+        labels[key] = [];
+      }
+      if (!labels[key].includes(value)) {
+        labels[key].push(value);
+      }
+    }
+  }
+  return labels;
+}

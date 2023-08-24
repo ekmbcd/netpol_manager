@@ -2,20 +2,20 @@ import { useClusterStore } from "@/store/clusterStore";
 import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { NetworkPolicyFull } from "../types";
-import { addIngressRule } from "../utils/form";
 import IngressForm from "./formElements/IngressForm";
 import MatchLabelsForm from "./formElements/MatchLabelsForm";
 import MetadataForm from "./formElements/MetadataForm";
 import PolicyTypesForm from "./formElements/PolicyTypesForm";
+import SelectorForm from "./formElements/SelectorForm";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 
 function DynamicForm() {
   const setNewNetpol = useClusterStore((state) => state.setNewNetpol);
-  const postNetpol = useClusterStore((state) => state.postNetpol);
+  // const postNetpol = useClusterStore((state) => state.postNetpol);
   const newNetpol = useClusterStore((state) => state.newNetpol);
 
   const methods = useForm<NetworkPolicyFull>({
+    // get starting values from store
     defaultValues: newNetpol || {
       apiVersion: "networking.k8s.io/v1",
       kind: "NetworkPolicy",
@@ -24,10 +24,7 @@ function DynamicForm() {
         namespace: "",
       },
       spec: {
-        podSelector: {
-          // TODO: maybe remove this?
-          matchLabels: {},
-        },
+        podSelector: {},
         policyTypes: [],
       },
     },
@@ -35,6 +32,7 @@ function DynamicForm() {
 
   const watch = methods.watch;
 
+  // TODO: this causes re-rendering of the whole form, can we avoid it?
   // update newNetpol in store when form changes
   useEffect(() => {
     const subscription = watch((data) =>
@@ -45,46 +43,30 @@ function DynamicForm() {
 
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={methods.handleSubmit((data) => {
-          console.log(data);
-          postNetpol();
-        })}
-      >
+      <form onSubmit={(e) => e.preventDefault()}>
         <MetadataForm />
 
         <div className="pl-2 border-l-2 border-slate-300 mb-4">
           <h3 className="text-lg font-semibold">Spec</h3>
 
-          <div className="pl-2 border-l-2 border-slate-300 mb-4">
-            <h4 className="font-semibold text-slate-900 pb-2">Pod Selector</h4>
-            <MatchLabelsForm />
-          </div>
+          <SelectorForm title="Pod Selector" path="spec.podSelector" />
+          {/* <MatchLabelsForm
+            title="Pod Selector"
+            path="spec.podSelector.matchLabels"
+          /> */}
 
           <PolicyTypesForm />
 
-          <div className="pl-2 border-l-2 border-slate-300 mb-4">
-            <h4 className="font-semibold text-slate-900 pb-2">Ingress</h4>
-            {watch("spec.ingress") &&
-              watch("spec.ingress")!.map((_, index) => (
-                <div key={index}>
-                  <IngressForm ingressIndex={index} />
-                  {index !== watch("spec.ingress")!.length - 1 && (
-                    <Separator className="my-2" />
-                  )}
-                </div>
-              ))}
-            <Button
-              type="button"
-              onClick={() =>
-                addIngressRule(methods.getValues, methods.setValue)
-              }
-            >
-              add ingress
-            </Button>
-          </div>
+          <IngressForm />
         </div>
-        <Button type="submit">Submit</Button>
+        <Button
+          type="button"
+          onClick={() => {
+            console.log(methods.getValues());
+          }}
+        >
+          Submit
+        </Button>
       </form>
     </FormProvider>
   );

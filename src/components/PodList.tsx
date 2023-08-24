@@ -1,13 +1,9 @@
+import { PodOrNetpol } from "@/types";
 import { useState } from "react";
 import { useClusterStore } from "../store/clusterStore";
 import NetpolListElement from "./NetpolListElement";
 import PodListElement from "./PodListElement";
 import TabsButton from "./TabsButton";
-
-export enum PodOrNetpol {
-  POD = "Pods",
-  NETPOL = "Netpols",
-}
 
 type PodListProps = {
   initialView: PodOrNetpol;

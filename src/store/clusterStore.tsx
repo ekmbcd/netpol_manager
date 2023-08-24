@@ -1,5 +1,5 @@
 import routes from "@/api/routes";
-import { parsePods } from "@/utils/parser";
+import { parseLabels, parsePods } from "@/utils/parser";
 import { Edge } from "reactflow";
 import { create } from "zustand";
 import {
@@ -31,6 +31,8 @@ type ClusterStore = {
   selectedNetpol: NetworkPolicy | null;
   selectedView: View;
   newNetpol: NetworkPolicyFull;
+  podLabels: Record<string, string[]>;
+  namespaceLabels: Record<string, string[]>;
 
   setPods: (pods: PodNetpol[]) => void;
   setNamespaces: (namespaces: Namespace[]) => void;
@@ -40,6 +42,7 @@ type ClusterStore = {
   setSelectedNetpol: (netpol: NetworkPolicy | null) => void;
   setSelectedView: (view: View) => void;
   setNewNetpol: (netpol: NetworkPolicyFull) => void;
+  getLabels: (origin: "pod" | "namespace", label?: string) => string[];
 
   getDataFromCluster: () => void;
   postNetpol: () => void;
@@ -56,7 +59,7 @@ export const useClusterStore = create<ClusterStore>()((set, get) => ({
   connectedNodes: new Set(),
   selectedPodId: null,
   selectedNetpol: null,
-  selectedView: View.CLUSTER,
+  selectedView: View.NEW_POLICY,
   newNetpol: {
     apiVersion: "networking.k8s.io/v1",
     kind: "NetworkPolicy",
@@ -69,6 +72,8 @@ export const useClusterStore = create<ClusterStore>()((set, get) => ({
       policyTypes: [],
     },
   },
+  podLabels: {},
+  namespaceLabels: {},
 
   setPods: (pods) => set({ pods, edges: generateClusterEdges(pods) }),
   setNamespaces: (namespaces) => {
@@ -121,6 +126,12 @@ export const useClusterStore = create<ClusterStore>()((set, get) => ({
     }
   },
   setNewNetpol: (netpol) => set({ newNetpol: netpol }),
+  getLabels: (origin, label) => {
+    if (!label) {
+      return Object.keys(get()[`${origin}Labels`]);
+    }
+    return get()[`${origin}Labels`][label];
+  },
 
   getDataFromCluster: async () => {
     const [pods, namespaces, netpols] = await Promise.all([
@@ -135,6 +146,8 @@ export const useClusterStore = create<ClusterStore>()((set, get) => ({
       networkPolicies: netpols,
       edges: generateClusterEdges(pods),
       namespacesColorsMap: generateNamespacesColorMap(namespaces),
+      podLabels: parseLabels(pods),
+      namespaceLabels: parseLabels(namespaces),
     });
   },
 

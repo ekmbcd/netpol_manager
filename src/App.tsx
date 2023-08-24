@@ -2,12 +2,13 @@ import { useEffect } from "react";
 import { ReactFlowProvider } from "reactflow";
 import "reactflow/dist/style.css";
 import FormCodeSwitcher from "./components/FormCodeSwitcher";
-import PodList, { PodOrNetpol } from "./components/PodList";
+import PodList from "./components/PodList";
 import TabsButton from "./components/TabsButton";
 import ClusterDisplay from "./components/displays/ClusterDisplay";
 import NetpolDisplay from "./components/displays/NetpolDisplay";
 import PodDisplay from "./components/displays/PodDisplay";
 import { View, useClusterStore } from "./store/clusterStore";
+import { PodOrNetpol } from "./types";
 
 function App() {
   const getDataFromCluster = useClusterStore(

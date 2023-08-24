@@ -1,6 +1,6 @@
-// ------------- PARSER TYPES ---------------- //
 import { XYPosition } from "reactflow";
 
+// ------------- PARSER TYPES ---------------- //
 export type OwnerReference = {
   kind: string;
   name: string;
@@ -31,11 +31,6 @@ export type Namespace = {
   name: string;
   labels: Record<string, string>;
 };
-
-export enum PolicyType {
-  Ingress = "Ingress",
-  Egress = "Egress",
-}
 
 export type MatchExpression = {
   key: string;
@@ -105,13 +100,6 @@ export type WithLabels = {
   labels: Record<string, string>;
 };
 
-export enum Operator {
-  In = "In",
-  NotIn = "NotIn",
-  Exists = "Exists",
-  DoesNotExist = "DoesNotExist",
-}
-
 // ------------- FLOW TYPES ---------------- //
 
 export type CustomNode = {
@@ -120,3 +108,27 @@ export type CustomNode = {
   width: number;
   height: number;
 };
+
+// ------------- ENUMS ---------------- //
+
+export enum PodOrNetpol {
+  POD = "Pods",
+  NETPOL = "Netpols",
+}
+
+export enum Operator {
+  In = "In",
+  NotIn = "NotIn",
+  Exists = "Exists",
+  DoesNotExist = "DoesNotExist",
+}
+
+export enum PolicyType {
+  Ingress = "Ingress",
+  Egress = "Egress",
+}
+
+export enum SelectorType {
+  MatchLabels = "matchLabels",
+  MatchExpressions = "matchExpressions",
+}
