@@ -21,18 +21,10 @@ function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
   // labels are a Record<string, string>, so we need to convert it to an array
   const labelsArray = Object.entries(labels || {});
 
+  // TODO: this breaks when key has a dot in it (e.g. "app.kubernetes.io/name")
   // change either the key or the value of a label
-  function onChange(
-    event: React.ChangeEvent<HTMLInputElement> | string,
-    type: "key" | "value",
-    key: string
-  ) {
-    let value;
-    if (typeof event === "string") {
-      value = event;
-    } else {
-      value = event.target.value;
-    }
+  function onChange(value: string, type: "key" | "value", key: string) {
+    console.log(value, type, key);
     if (type === "value") {
       setFieldValue(`${path}.${key}`, value);
     } else {
@@ -44,7 +36,7 @@ function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
   }
 
   return (
-    <div className="pl-2 border-l-2 border-slate-300 mb-4">
+    <div className="mb-4 border-l-2 border-slate-300 pl-2">
       <div className="flex justify-between pb-2">
         <h4 className="font-semibold text-slate-900">MatchLabels</h4>
         <NewElementButton
@@ -54,7 +46,7 @@ function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
       <div>
         {labelsArray.map(([key, value], index) => {
           return (
-            <div key={index} className="flex gap-2 items-center mb-2">
+            <div key={index} className="mb-2 flex items-center gap-2">
               <Autocomplete
                 required
                 className="grow"

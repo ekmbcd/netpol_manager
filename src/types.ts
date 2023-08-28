@@ -133,3 +133,9 @@ export enum SelectorType {
   MatchExpressions = "matchExpressions",
   Both = "both",
 }
+
+export enum PolicySelectorType {
+  PodSelector = "podSelector",
+  NamespaceSelector = "namespaceSelector",
+  ipBlock = "ipBlock",
+}

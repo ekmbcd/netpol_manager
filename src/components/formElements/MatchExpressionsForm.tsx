@@ -23,7 +23,7 @@ function MatchExpressions({ path }: MatchExpressionsProps) {
   }
 
   return (
-    <div className="pl-2 border-l-2 border-slate-300 mb-4">
+    <div className="mb-4 border-l-2 border-slate-300 pl-2">
       <div className="flex justify-between pb-2">
         <h4 className="font-semibold text-slate-900">MatchExpressions</h4>
         <NewElementButton
@@ -33,9 +33,9 @@ function MatchExpressions({ path }: MatchExpressionsProps) {
       <div>
         {expressions.map((_, index) => (
           <div key={index}>
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <div>
-                <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-2">
                   <TextInput
                     required
                     label="key"
@@ -47,6 +47,7 @@ function MatchExpressions({ path }: MatchExpressionsProps) {
                     label="operator"
                     {...getInputProps(`${path}.${index}.operator`)}
                     data={["In", "NotIn", "Exists", "DoesNotExist"]}
+                    checkIconPosition="right"
                   />
                 </div>
 

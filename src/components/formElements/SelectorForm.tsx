@@ -2,7 +2,6 @@ import { NetworkPolicyFull, SelectorType } from "@/types";
 import { changeSelector, useFormContext } from "@/utils/form";
 import { Path } from "@/utils/path";
 import { Select } from "@mantine/core";
-import { useState } from "react";
 import MatchExpressions from "./MatchExpressionsForm";
 import MatchLabelsForm from "./MatchLabelsForm";
 
@@ -13,23 +12,32 @@ type SelectorFormProps = {
 };
 
 function SelectorForm({ title, path, LabelSource = "pod" }: SelectorFormProps) {
-  const [selectorType, setSelectorType] = useState<SelectorType>();
-  const { setFieldValue } = useFormContext();
+  const { setFieldValue, getInputProps } = useFormContext();
+  const selector = getInputProps(path).value;
+
+  let selectorType: SelectorType | undefined;
+  if ("matchLabels" in selector && "matchExpressions" in selector) {
+    selectorType = SelectorType.Both;
+  } else if ("matchExpressions" in selector) {
+    selectorType = SelectorType.MatchExpressions;
+  } else if ("matchLabels" in selector) {
+    selectorType = SelectorType.MatchLabels;
+  } else {
+    selectorType = undefined;
+  }
 
   function onSelectorChange(newType: SelectorType) {
+    // if the user selects the same option, reset the selector
     if (newType === selectorType) {
-      return;
+      changeSelector(null, path, setFieldValue);
     }
     changeSelector(newType, path, setFieldValue);
-    setSelectorType(newType);
   }
 
   return (
-    <div className="pl-2 border-l-2 border-slate-300 mb-4">
-      <div className="flex justify-between pb-2 items-center">
+    <div className="mb-4 border-l-2 border-slate-300 pl-2">
+      <div className="flex items-center justify-between pb-2">
         <h4 className="font-semibold text-slate-900">{title}</h4>
-
-        {/* TODO: add possibility to select none */}
         <Select
           placeholder="Choose a Selector"
           onChange={onSelectorChange}
@@ -38,6 +46,8 @@ function SelectorForm({ title, path, LabelSource = "pod" }: SelectorFormProps) {
             SelectorType.MatchExpressions,
             SelectorType.Both,
           ]}
+          checkIconPosition="right"
+          value={selectorType}
         />
       </div>
 

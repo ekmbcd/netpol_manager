@@ -3,6 +3,8 @@ import {
   MatchExpression,
   NetworkPolicyFull,
   Operator,
+  Policy,
+  PolicySelectorType,
   Port,
   SelectorType,
 } from "@/types";
@@ -17,6 +19,7 @@ export function addIngressRule(
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
   ingress: IngressPolicy[] = []
 ) {
+  console.log("addIngressRule");
   setFieldValue("spec.ingress", [
     ...ingress,
     {
@@ -73,7 +76,7 @@ export function removeLabel(
 }
 
 export function changeSelector(
-  selectorType: SelectorType,
+  selectorType: SelectorType | null,
   path: Path<NetworkPolicyFull>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>
 ) {
@@ -92,6 +95,33 @@ export function changeSelector(
       setFieldValue(path, {
         matchLabels: {},
         matchExpressions: [],
+      });
+      break;
+    default:
+      setFieldValue(path, {});
+  }
+}
+
+export function changePolicySelector(
+  selectorType: PolicySelectorType,
+  path: Path<NetworkPolicyFull>,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>
+) {
+  switch (selectorType) {
+    case PolicySelectorType.PodSelector:
+      setFieldValue(path, {
+        podSelector: {},
+      });
+      break;
+    // TODO: manage both namespaceSelector and optional podSelector
+    case PolicySelectorType.NamespaceSelector:
+      setFieldValue(path, {
+        namespaceSelector: {},
+      });
+      break;
+    case PolicySelectorType.ipBlock:
+      setFieldValue(path, {
+        ipBlock: {},
       });
       break;
   }
@@ -121,5 +151,30 @@ export function removeMatchExpression(
   setFieldValue(
     path,
     expressions.filter((_, i) => i !== index)
+  );
+}
+
+export function addPolicy(
+  policies: Policy[],
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  path: Path<NetworkPolicyFull>
+) {
+  setFieldValue(path, [
+    ...policies,
+    {
+      podSelector: {},
+    },
+  ]);
+}
+
+export function removePolicy(
+  policies: Policy[],
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  path: Path<NetworkPolicyFull>,
+  index: number
+) {
+  setFieldValue(
+    path,
+    policies.filter((_, i) => i !== index)
   );
 }

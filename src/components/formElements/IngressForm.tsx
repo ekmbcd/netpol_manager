@@ -2,6 +2,7 @@ import { PolicyType } from "@/types";
 import { addIngressRule, useFormContext } from "@/utils/form";
 import { Divider } from "@mantine/core";
 import NewElementButton from "./NewElementButton";
+import PoliciesForm from "./PoliciesForm";
 import PortForm from "./PortForm";
 
 type IngressFormProps = {};
@@ -14,7 +15,7 @@ function IngressForm({}: IngressFormProps) {
   }
 
   return (
-    <div className="pl-2 border-l-2 border-slate-300 mb-4">
+    <div className="mb-4 border-l-2 border-slate-300 pl-2">
       <div className="flex justify-between pb-2">
         <h4 className="font-semibold text-slate-900">Ingress</h4>
         <NewElementButton
@@ -26,9 +27,7 @@ function IngressForm({}: IngressFormProps) {
           <div key={index}>
             <PortForm parentIndex={index} type="ingress" />
 
-            <div className="pl-2 border-l-2 border-slate-300 mb-4">
-              <p className="text-sm text-slate-700 mb-1">From</p>
-            </div>
+            <PoliciesForm title="From" path={`spec.ingress.${index}.from`} />
 
             {index !== values.spec.ingress!.length - 1 && <Divider my="md" />}
           </div>

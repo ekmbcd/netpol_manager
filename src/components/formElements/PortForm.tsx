@@ -18,19 +18,20 @@ function PortForm({ parentIndex, type }: PortFormProps) {
   const ports: Port[] | undefined = getInputProps(path).value;
 
   return (
-    <div className="pl-2 border-l-2 border-slate-300 mb-4">
+    <div className="mb-4 border-l-2 border-slate-300 pl-2">
       <div className="flex justify-between">
-        <p className="text-sm text-slate-700 mb-1">Ports</p>
+        <p className="mb-1 text-sm text-slate-700">Ports</p>
         <NewElementButton onClick={() => addPort(path, setFieldValue, ports)} />
       </div>
       {ports?.map((_, portIndex) => (
-        <div key={portIndex} className="flex gap-2 items-center">
+        <div key={portIndex} className="flex items-center gap-2">
           <Select
             required
             className="grow"
             label="protocol"
             {...getInputProps(`${path}.${portIndex}.protocol`)}
             data={["TCP", "UDP"]}
+            checkIconPosition="right"
           />
           <NumberInput
             required
