@@ -1,32 +1,37 @@
 import {
+  IngressPolicy,
   MatchExpression,
   NetworkPolicyFull,
   Operator,
+  Port,
   SelectorType,
 } from "@/types";
-import { FieldPath, UseFormGetValues, UseFormSetValue } from "react-hook-form";
+import { createFormContext } from "@mantine/form";
+import { SetFieldValue } from "node_modules/@mantine/form/lib/types";
+import { Path } from "./path";
+
+export const [FormProvider, useFormContext, useForm] =
+  createFormContext<NetworkPolicyFull>();
 
 export function addIngressRule(
-  getValues: UseFormGetValues<NetworkPolicyFull>,
-  setValue: UseFormSetValue<NetworkPolicyFull>
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  ingress: IngressPolicy[] = []
 ) {
-  setValue("spec.ingress", [
-    ...(getValues("spec.ingress") || []),
+  setFieldValue("spec.ingress", [
+    ...ingress,
     {
       from: [],
-      ports: [],
     },
   ]);
 }
 
 export function addPort(
-  getValues: UseFormGetValues<NetworkPolicyFull>,
-  setValue: UseFormSetValue<NetworkPolicyFull>,
-  type: "ingress" | "egress",
-  parentIndex: number
+  path: Path<NetworkPolicyFull>,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  ports: Port[] = []
 ) {
-  setValue(`spec.${type}.${parentIndex}.ports`, [
-    ...(getValues(`spec.${type}.${parentIndex}.ports`) || []),
+  setFieldValue(path, [
+    ...ports,
     {
       port: 0,
       protocol: "",
@@ -35,63 +40,69 @@ export function addPort(
 }
 
 export function removePort(
-  getValues: UseFormGetValues<NetworkPolicyFull>,
-  setValue: UseFormSetValue<NetworkPolicyFull>,
-  type: "ingress" | "egress",
-  parentIndex: number,
-  portIndex: number
+  path: Path<NetworkPolicyFull>,
+  portIndex: number,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  ports: Port[] = []
 ) {
-  setValue(
-    `spec.${type}.${parentIndex}.ports`,
-    (getValues(`spec.${type}.${parentIndex}.ports`) || []).filter(
-      (_, index) => index !== portIndex
-    )
+  setFieldValue(
+    path,
+    ports.filter((_, index) => index !== portIndex)
   );
 }
 
 export function addLabel(
   labels: Record<string, string>,
-  setValue: UseFormSetValue<NetworkPolicyFull>,
-  path: FieldPath<NetworkPolicyFull>
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  path: Path<NetworkPolicyFull>
 ) {
   const temp = { ...labels };
   temp[""] = "";
-  setValue(path, temp);
+  setFieldValue(path, temp);
 }
 
 export function removeLabel(
   labels: Record<string, string>,
-  setValue: UseFormSetValue<NetworkPolicyFull>,
-  path: FieldPath<NetworkPolicyFull>,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  path: Path<NetworkPolicyFull>,
   key: string
 ) {
   const temp = { ...labels };
   delete temp[key];
-  setValue(path, temp);
+  setFieldValue(path, temp);
 }
 
 export function changeSelector(
   selectorType: SelectorType,
-  path: FieldPath<NetworkPolicyFull>,
-  setValue: UseFormSetValue<NetworkPolicyFull>
+  path: Path<NetworkPolicyFull>,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>
 ) {
-  if (selectorType === SelectorType.MatchLabels) {
-    setValue(path, {
-      matchLabels: {},
-    });
-  } else {
-    setValue(path, {
-      matchExpressions: [],
-    });
+  switch (selectorType) {
+    case SelectorType.MatchLabels:
+      setFieldValue(path, {
+        matchLabels: {},
+      });
+      break;
+    case SelectorType.MatchExpressions:
+      setFieldValue(path, {
+        matchExpressions: [],
+      });
+      break;
+    case SelectorType.Both:
+      setFieldValue(path, {
+        matchLabels: {},
+        matchExpressions: [],
+      });
+      break;
   }
 }
 
 export function addMatchExpression(
   expressions: MatchExpression[],
-  setValue: UseFormSetValue<NetworkPolicyFull>,
-  path: FieldPath<NetworkPolicyFull>
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  path: Path<NetworkPolicyFull>
 ) {
-  setValue(path, [
+  setFieldValue(path, [
     ...expressions,
     {
       key: "",
@@ -103,11 +114,11 @@ export function addMatchExpression(
 
 export function removeMatchExpression(
   expressions: MatchExpression[],
-  setValue: UseFormSetValue<NetworkPolicyFull>,
-  path: FieldPath<NetworkPolicyFull>,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  path: Path<NetworkPolicyFull>,
   index: number
 ) {
-  setValue(
+  setFieldValue(
     path,
     expressions.filter((_, i) => i !== index)
   );

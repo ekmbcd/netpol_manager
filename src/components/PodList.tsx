@@ -1,9 +1,9 @@
 import { PodOrNetpol } from "@/types";
+import { Tabs, TextInput } from "@mantine/core";
 import { useState } from "react";
 import { useClusterStore } from "../store/clusterStore";
 import NetpolListElement from "./NetpolListElement";
 import PodListElement from "./PodListElement";
-import TabsButton from "./TabsButton";
 
 type PodListProps = {
   initialView: PodOrNetpol;
@@ -24,41 +24,49 @@ function PodList({ initialView }: PodListProps) {
   );
 
   return (
-    <div className="flex max-h-full w-4/12 flex-col p-4 pr-0 max-w-sm">
-      <div
-        className="flex items-center justify-center gap-8"
-        aria-label="Change view"
+    <Tabs
+      value={view}
+      onChange={(e) => setView(e as PodOrNetpol)}
+      className="flex max-h-full w-4/12 max-w-sm flex-col"
+    >
+      <Tabs.List
+        justify="center"
+        // TODO: hack for mantine bug, remove when fixed
+        className="before:!bottom-0"
       >
-        <TabsButton
-          value={PodOrNetpol.POD}
-          label="Pods"
-          current={view}
-          onClick={setView}
-        />
-        <TabsButton
-          value={PodOrNetpol.NETPOL}
-          label="Netpols"
-          current={view}
-          onClick={setView}
-        />
-      </div>
-      <input
+        <Tabs.Tab value={PodOrNetpol.POD}>Pods</Tabs.Tab>
+        <Tabs.Tab value={PodOrNetpol.NETPOL}>Netpols</Tabs.Tab>
+      </Tabs.List>
+
+      <TextInput
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-2 p-2"
+        className="py-2"
         placeholder="Search..."
       />
 
-      <ul className="h-full overflow-auto border border-slate-300">
-        {view === PodOrNetpol.POD
-          ? filteredPods.map((pod, index) => (
-              <PodListElement pod={pod} key={index} />
-            ))
-          : filteredNetpols.map((netpol, index) => (
-              <NetpolListElement netpol={netpol} key={index} />
-            ))}
-      </ul>
-    </div>
+      <Tabs.Panel
+        value={PodOrNetpol.POD}
+        className="h-full overflow-auto border-slate-300"
+      >
+        <ul>
+          {filteredPods.map((pod, index) => (
+            <PodListElement pod={pod} key={index} />
+          ))}
+        </ul>
+      </Tabs.Panel>
+
+      <Tabs.Panel
+        value={PodOrNetpol.NETPOL}
+        className="h-full overflow-auto border-slate-300"
+      >
+        <ul>
+          {filteredNetpols.map((netpol, index) => (
+            <NetpolListElement netpol={netpol} key={index} />
+          ))}
+        </ul>
+      </Tabs.Panel>
+    </Tabs>
   );
 }
 

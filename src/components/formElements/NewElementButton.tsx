@@ -1,17 +1,36 @@
+import { ActionIcon } from "@mantine/core";
+
 type NewElementButtonProps = {
   onClick: () => void;
 };
 
 function NewElementButton({ onClick }: NewElementButtonProps) {
   return (
-    <button
-      className="grid place-content-center w-6 h-6 mr-2 text-green-100 
-       text-lg transition-colors duration-150 bg-green-500 rounded-full focus:shadow-outline hover:bg-green-600 shrink-0"
-      type="button"
+    <ActionIcon
+      variant="filled"
+      color="lime"
+      radius="xl"
+      p={2}
+      size="sm"
       onClick={onClick}
+      style={{ background: "var(--_ai-bg, var(--ai-bg))" }}
     >
-      <p className="pb-0.5">+</p>
-    </button>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        strokeWidth="2"
+        stroke="currentColor"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M12 5l0 14"></path>
+        <path d="M5 12l14 0"></path>
+      </svg>
+    </ActionIcon>
   );
 }
 

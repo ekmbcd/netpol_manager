@@ -28,7 +28,7 @@ function ClusterDisplay() {
   );
 
   return (
-    <div className="flex-grow p-2">
+    <div className="flex-grow">
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}

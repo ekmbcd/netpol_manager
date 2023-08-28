@@ -1,3 +1,4 @@
+import { TextInput } from "@mantine/core";
 import { forwardRef } from "react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -29,7 +30,7 @@ const InputWithLabel = forwardRef(
               {...props}
             />
           ) : (
-            <Input value={value} {...props} ref={ref} />
+            <TextInput value={value} {...props} />
           )}
         </Label>
       </div>

@@ -131,4 +131,5 @@ export enum PolicyType {
 export enum SelectorType {
   MatchLabels = "matchLabels",
   MatchExpressions = "matchExpressions",
+  Both = "both",
 }

@@ -1,21 +1,21 @@
 import { useClusterStore } from "@/store/clusterStore";
 import { NetworkPolicyFull } from "@/types";
-import { addLabel, removeLabel } from "@/utils/form";
-import { FieldPath, useFormContext } from "react-hook-form";
+import { addLabel, removeLabel, useFormContext } from "@/utils/form";
+import { Path } from "@/utils/path";
+import { Autocomplete } from "@mantine/core";
 import DeleteElementButton from "./DeleteElementButton";
-import InputWithLabel from "./InputWithLabel";
 import NewElementButton from "./NewElementButton";
 
 type MatchLabelsFormProps = {
-  path: FieldPath<NetworkPolicyFull>;
+  path: Path<NetworkPolicyFull>;
   LabelSource?: "pod" | "namespace";
 };
 
 function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
-  const { watch, setValue } = useFormContext<NetworkPolicyFull>();
+  const { getInputProps, setFieldValue } = useFormContext();
   const getLabels = useClusterStore((state) => state.getLabels);
 
-  const labels = watch(path) as Record<string, string> | undefined;
+  const labels: Record<string, string> | undefined = getInputProps(path).value;
 
   // TODO: bug(?): if you add 2 labels with the same key, the first one will be deleted
   // labels are a Record<string, string>, so we need to convert it to an array
@@ -34,12 +34,12 @@ function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
       value = event.target.value;
     }
     if (type === "value") {
-      setValue(`${path}.${key}` as FieldPath<NetworkPolicyFull>, value);
+      setFieldValue(`${path}.${key}`, value);
     } else {
       const temp = { ...labels };
       temp[value] = temp[key];
       delete temp[key];
-      setValue(path, temp);
+      setFieldValue(path, temp);
     }
   }
 
@@ -48,31 +48,33 @@ function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
       <div className="flex justify-between pb-2">
         <h4 className="font-semibold text-slate-900">MatchLabels</h4>
         <NewElementButton
-          onClick={() => addLabel(labels || {}, setValue, path)}
+          onClick={() => addLabel(labels || {}, setFieldValue, path)}
         />
       </div>
       <div>
         {labelsArray.map(([key, value], index) => {
           return (
-            <div key={index} className="flex gap-2 items-center">
-              <div className="grow">
-                <InputWithLabel
-                  label="key"
-                  onChange={(e) => onChange(e, "key", key)}
-                  value={key}
-                  options={getLabels(LabelSource)}
-                />
-              </div>
-              <div className="grow">
-                <InputWithLabel
-                  label="value"
-                  onChange={(e) => onChange(e, "value", key)}
-                  value={value}
-                  options={getLabels(LabelSource, key)}
-                />
-              </div>
+            <div key={index} className="flex gap-2 items-center mb-2">
+              <Autocomplete
+                required
+                className="grow"
+                label="key"
+                onChange={(e) => onChange(e, "key", key)}
+                value={key}
+                data={getLabels(LabelSource)}
+              />
+
+              <Autocomplete
+                required
+                className="grow"
+                label="value"
+                onChange={(e) => onChange(e, "value", key)}
+                value={value}
+                data={getLabels(LabelSource, key)}
+              />
+
               <DeleteElementButton
-                onClick={() => removeLabel(labels!, setValue, path, key)}
+                onClick={() => removeLabel(labels!, setFieldValue, path, key)}
               />
             </div>
           );

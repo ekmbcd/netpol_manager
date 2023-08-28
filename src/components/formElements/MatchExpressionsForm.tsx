@@ -1,17 +1,22 @@
 import { MatchExpression, NetworkPolicyFull } from "@/types";
-import { addMatchExpression, removeMatchExpression } from "@/utils/form";
-import { FieldPath, useFormContext } from "react-hook-form";
+import {
+  addMatchExpression,
+  removeMatchExpression,
+  useFormContext,
+} from "@/utils/form";
+import { Path } from "@/utils/path";
+import { Divider, Select, TagsInput, TextInput } from "@mantine/core";
 import DeleteElementButton from "./DeleteElementButton";
 import NewElementButton from "./NewElementButton";
 
 type MatchExpressionsProps = {
-  path: FieldPath<NetworkPolicyFull>;
+  path: Path<NetworkPolicyFull>;
 };
 
 function MatchExpressions({ path }: MatchExpressionsProps) {
-  const { watch, setValue } = useFormContext<NetworkPolicyFull>();
+  const { getInputProps, setFieldValue } = useFormContext();
 
-  const expressions = watch(path) as MatchExpression[] | undefined;
+  const expressions: MatchExpression[] | undefined = getInputProps(path).value;
 
   if (!expressions) {
     return null;
@@ -22,46 +27,44 @@ function MatchExpressions({ path }: MatchExpressionsProps) {
       <div className="flex justify-between pb-2">
         <h4 className="font-semibold text-slate-900">MatchExpressions</h4>
         <NewElementButton
-          onClick={() => addMatchExpression(expressions, setValue, path)}
+          onClick={() => addMatchExpression(expressions, setFieldValue, path)}
         />
       </div>
       <div>
-        {expressions.map((expression, index) => (
-          <div key={index} className="flex gap-2 items-center">
-            <div>{expression.key} aa</div>
-            <DeleteElementButton
-              onClick={() =>
-                removeMatchExpression(expressions, setValue, path, index)
-              }
-            />
-          </div>
-        ))}
+        {expressions.map((_, index) => (
+          <div key={index}>
+            <div className="flex gap-2 items-center">
+              <div>
+                <div className="flex gap-2 items-center">
+                  <TextInput
+                    required
+                    label="key"
+                    className="grow"
+                    {...getInputProps(`${path}.${index}.key`)}
+                  />
+                  <Select
+                    required
+                    label="operator"
+                    {...getInputProps(`${path}.${index}.operator`)}
+                    data={["In", "NotIn", "Exists", "DoesNotExist"]}
+                  />
+                </div>
 
-        {/* {labelsArray.map(([key, value], index) => {
-          return (
-            <div key={index} className="flex gap-2 items-center">
-              <div className="grow">
-                <InputWithLabel
-                  label="key"
-                  onChange={(e) => onChange(e, "key", key)}
-                  value={key}
-                  options={getLabels(LabelSource)}
+                <TagsInput
+                  label="values"
+                  {...getInputProps(`${path}.${index}.values`)}
                 />
               </div>
-              <div className="grow">
-                <InputWithLabel
-                  label="value"
-                  onChange={(e) => onChange(e, "value", key)}
-                  value={value}
-                  options={getLabels(LabelSource, key)}
-                />
-              </div>
+
               <DeleteElementButton
-                onClick={() => removeLabel(labels!, setValue, path, key)}
+                onClick={() =>
+                  removeMatchExpression(expressions, setFieldValue, path, index)
+                }
               />
             </div>
-          );
-        })} */}
+            {index !== expressions.length - 1 && <Divider my="md" />}
+          </div>
+        ))}
       </div>
     </div>
   );

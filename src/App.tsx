@@ -1,9 +1,9 @@
+import { Tabs } from "@mantine/core";
 import { useEffect } from "react";
 import { ReactFlowProvider } from "reactflow";
 import "reactflow/dist/style.css";
 import FormCodeSwitcher from "./components/FormCodeSwitcher";
 import PodList from "./components/PodList";
-import TabsButton from "./components/TabsButton";
 import ClusterDisplay from "./components/displays/ClusterDisplay";
 import NetpolDisplay from "./components/displays/NetpolDisplay";
 import PodDisplay from "./components/displays/PodDisplay";
@@ -23,63 +23,63 @@ function App() {
 
   return (
     <div style={{ height: "750px" }} className="p-2">
-      <div className="flex h-full flex-col">
-        <div className="flex h-full min-h-0">
-          {view === View.CLUSTER && (
-            <ReactFlowProvider>
-              <ClusterDisplay />
-              <PodList initialView={PodOrNetpol.POD} />
-            </ReactFlowProvider>
-          )}
-          {view === View.POD && (
-            <ReactFlowProvider>
-              <PodDisplay />
-              <PodList initialView={PodOrNetpol.POD} />
-            </ReactFlowProvider>
-          )}
-          {view === View.NETPOL && (
-            <ReactFlowProvider>
-              <NetpolDisplay />
-              <PodList initialView={PodOrNetpol.NETPOL} />
-            </ReactFlowProvider>
-          )}
-          {view === View.NEW_POLICY && (
-            <ReactFlowProvider>
-              <NetpolDisplay />
-              <FormCodeSwitcher />
-            </ReactFlowProvider>
-          )}
-        </div>
-        <nav
-          className="flex items-center justify-center gap-8"
-          aria-label="Change view"
-        >
-          <TabsButton
-            value={View.CLUSTER}
-            label="Cluster view"
-            current={view}
-            onClick={setSelectedView}
-          />
-          <TabsButton
-            value={View.POD}
-            label="Pod view"
-            current={view}
-            onClick={setSelectedView}
-          />
-          <TabsButton
-            value={View.NETPOL}
-            label="Network Policy view"
-            current={view}
-            onClick={setSelectedView}
-          />
-          <TabsButton
-            value={View.NEW_POLICY}
-            label="New Policy"
-            current={view}
-            onClick={setSelectedView}
-          />
-        </nav>
-      </div>
+      <Tabs
+        value={view}
+        onChange={setSelectedView}
+        inverted
+        keepMounted={false}
+        className="h-full"
+      >
+        {/* CLUSTER VIEW */}
+        <Tabs.Panel className="flex h-full" value={View.CLUSTER}>
+          <ReactFlowProvider>
+            <ClusterDisplay />
+            <PodList initialView={PodOrNetpol.POD} />
+          </ReactFlowProvider>
+        </Tabs.Panel>
+
+        {/* POD VIEW */}
+        <Tabs.Panel className="flex h-full" value={View.POD}>
+          <ReactFlowProvider>
+            <PodDisplay />
+            <PodList initialView={PodOrNetpol.POD} />
+          </ReactFlowProvider>
+        </Tabs.Panel>
+
+        {/* NETPOL VIEW */}
+        <Tabs.Panel className="flex h-full" value={View.NETPOL}>
+          <ReactFlowProvider>
+            <NetpolDisplay />
+            <PodList initialView={PodOrNetpol.NETPOL} />
+          </ReactFlowProvider>
+        </Tabs.Panel>
+
+        {/* NEW POLICY VIEW */}
+        <Tabs.Panel className="flex h-full" value={View.NEW_POLICY}>
+          <ReactFlowProvider>
+            <NetpolDisplay />
+            <FormCodeSwitcher />
+          </ReactFlowProvider>
+        </Tabs.Panel>
+
+        <Tabs.List justify="center">
+          <Tabs.Tab className="text-base" value={View.CLUSTER}>
+            Cluster view
+          </Tabs.Tab>
+
+          <Tabs.Tab className="text-base" value={View.POD}>
+            Pod view
+          </Tabs.Tab>
+
+          <Tabs.Tab className="text-base" value={View.NETPOL}>
+            Network Policy view
+          </Tabs.Tab>
+
+          <Tabs.Tab className="text-base" value={View.NEW_POLICY}>
+            New Policy
+          </Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
     </div>
   );
 }
