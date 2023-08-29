@@ -1,6 +1,8 @@
 import {
+  EgressPolicy,
   IngressPolicy,
   MatchExpression,
+  NamespaceSelector,
   NetworkPolicyFull,
   Operator,
   Policy,
@@ -10,7 +12,7 @@ import {
 } from "@/types";
 import { createFormContext } from "@mantine/form";
 import { SetFieldValue } from "node_modules/@mantine/form/lib/types";
-import { Path } from "./path";
+import { NetworkPolicyPathExtract } from "./path";
 
 export const [FormProvider, useFormContext, useForm] =
   createFormContext<NetworkPolicyFull>();
@@ -19,7 +21,6 @@ export function addIngressRule(
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
   ingress: IngressPolicy[] = []
 ) {
-  console.log("addIngressRule");
   setFieldValue("spec.ingress", [
     ...ingress,
     {
@@ -28,8 +29,20 @@ export function addIngressRule(
   ]);
 }
 
+export function addEgressRule(
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  egress: EgressPolicy[] = []
+) {
+  setFieldValue("spec.egress", [
+    ...egress,
+    {
+      to: [],
+    },
+  ]);
+}
+
 export function addPort(
-  path: Path<NetworkPolicyFull>,
+  path: NetworkPolicyPathExtract<`${string}.ports`>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
   ports: Port[] = []
 ) {
@@ -43,10 +56,10 @@ export function addPort(
 }
 
 export function removePort(
-  path: Path<NetworkPolicyFull>,
-  portIndex: number,
+  path: NetworkPolicyPathExtract<`${string}.ports`>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
-  ports: Port[] = []
+  ports: Port[] = [],
+  portIndex: number
 ) {
   setFieldValue(
     path,
@@ -55,9 +68,9 @@ export function removePort(
 }
 
 export function addLabel(
-  labels: Record<string, string>,
+  path: NetworkPolicyPathExtract<`${string}.matchLabels`>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
-  path: Path<NetworkPolicyFull>
+  labels: Record<string, string>
 ) {
   const temp = { ...labels };
   temp[""] = "";
@@ -65,9 +78,9 @@ export function addLabel(
 }
 
 export function removeLabel(
-  labels: Record<string, string>,
+  path: NetworkPolicyPathExtract<`${string}.matchLabels`>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
-  path: Path<NetworkPolicyFull>,
+  labels: Record<string, string>,
   key: string
 ) {
   const temp = { ...labels };
@@ -76,9 +89,11 @@ export function removeLabel(
 }
 
 export function changeSelector(
-  selectorType: SelectorType | null,
-  path: Path<NetworkPolicyFull>,
-  setFieldValue: SetFieldValue<NetworkPolicyFull>
+  path: NetworkPolicyPathExtract<
+    `${string}.podSelector` | `${string}.namespaceSelector`
+  >,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  selectorType: SelectorType | null
 ) {
   switch (selectorType) {
     case SelectorType.MatchLabels:
@@ -103,9 +118,11 @@ export function changeSelector(
 }
 
 export function changePolicySelector(
-  selectorType: PolicySelectorType,
-  path: Path<NetworkPolicyFull>,
-  setFieldValue: SetFieldValue<NetworkPolicyFull>
+  path: NetworkPolicyPathExtract<
+    `${string}.from.${number}` | `${string}.to.${number}`
+  >,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  selectorType: PolicySelectorType
 ) {
   switch (selectorType) {
     case PolicySelectorType.PodSelector:
@@ -128,9 +145,9 @@ export function changePolicySelector(
 }
 
 export function addMatchExpression(
-  expressions: MatchExpression[],
+  path: NetworkPolicyPathExtract<`${string}.matchExpressions`>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
-  path: Path<NetworkPolicyFull>
+  expressions: MatchExpression[]
 ) {
   setFieldValue(path, [
     ...expressions,
@@ -143,9 +160,9 @@ export function addMatchExpression(
 }
 
 export function removeMatchExpression(
-  expressions: MatchExpression[],
+  path: NetworkPolicyPathExtract<`${string}.matchExpressions`>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
-  path: Path<NetworkPolicyFull>,
+  expressions: MatchExpression[],
   index: number
 ) {
   setFieldValue(
@@ -155,9 +172,9 @@ export function removeMatchExpression(
 }
 
 export function addPolicy(
-  policies: Policy[],
+  path: NetworkPolicyPathExtract<`${string}.from` | `${string}.to`>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
-  path: Path<NetworkPolicyFull>
+  policies: Policy[]
 ) {
   setFieldValue(path, [
     ...policies,
@@ -168,13 +185,30 @@ export function addPolicy(
 }
 
 export function removePolicy(
-  policies: Policy[],
+  path: NetworkPolicyPathExtract<`${string}.from` | `${string}.to`>,
   setFieldValue: SetFieldValue<NetworkPolicyFull>,
-  path: Path<NetworkPolicyFull>,
+  policies: Policy[],
   index: number
 ) {
   setFieldValue(
     path,
     policies.filter((_, i) => i !== index)
   );
+}
+
+export function togglePodSelectorToNamespaceSelector(
+  path: NetworkPolicyPathExtract<
+    `${string}.from.${number}` | `${string}.to.${number}`
+  >,
+  setFieldValue: SetFieldValue<NetworkPolicyFull>,
+  policy: NamespaceSelector,
+  value: boolean
+) {
+  if (value) {
+    setFieldValue(`${path}.podSelector`, {});
+  } else {
+    const temp = { ...policy };
+    delete temp.podSelector;
+    setFieldValue(`${path}`, temp);
+  }
 }

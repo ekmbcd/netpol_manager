@@ -1,16 +1,16 @@
-import { MatchExpression, NetworkPolicyFull } from "@/types";
+import { MatchExpression } from "@/types";
 import {
   addMatchExpression,
   removeMatchExpression,
   useFormContext,
 } from "@/utils/form";
-import { Path } from "@/utils/path";
+import { NetworkPolicyPathExtract } from "@/utils/path";
 import { Divider, Select, TagsInput, TextInput } from "@mantine/core";
 import DeleteElementButton from "./DeleteElementButton";
 import NewElementButton from "./NewElementButton";
 
 type MatchExpressionsProps = {
-  path: Path<NetworkPolicyFull>;
+  path: NetworkPolicyPathExtract<`${string}.matchExpressions`>;
 };
 
 function MatchExpressions({ path }: MatchExpressionsProps) {
@@ -27,7 +27,7 @@ function MatchExpressions({ path }: MatchExpressionsProps) {
       <div className="flex justify-between pb-2">
         <h4 className="font-semibold text-slate-900">MatchExpressions</h4>
         <NewElementButton
-          onClick={() => addMatchExpression(expressions, setFieldValue, path)}
+          onClick={() => addMatchExpression(path, setFieldValue, expressions)}
         />
       </div>
       <div>
@@ -59,7 +59,7 @@ function MatchExpressions({ path }: MatchExpressionsProps) {
 
               <DeleteElementButton
                 onClick={() =>
-                  removeMatchExpression(expressions, setFieldValue, path, index)
+                  removeMatchExpression(path, setFieldValue, expressions, index)
                 }
               />
             </div>

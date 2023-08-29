@@ -1,19 +1,20 @@
-import { NetworkPolicyFull, Port } from "@/types";
+import { Port } from "@/types";
 import { addPort, removePort, useFormContext } from "@/utils/form";
-import { Path } from "@/utils/path";
 import { NumberInput, Select } from "@mantine/core";
 import DeleteElementButton from "./DeleteElementButton";
 import NewElementButton from "./NewElementButton";
 
+type ParentType = "ingress" | "egress";
+
 type PortFormProps = {
   parentIndex: number;
-  type: "ingress" | "egress";
+  type: ParentType;
 };
 
 function PortForm({ parentIndex, type }: PortFormProps) {
   const { getInputProps, setFieldValue } = useFormContext();
 
-  const path: Path<NetworkPolicyFull> = `spec.${type}.${parentIndex}.ports`;
+  const path: `spec.${ParentType}.${number}.ports` = `spec.${type}.${parentIndex}.ports`;
 
   const ports: Port[] | undefined = getInputProps(path).value;
 
@@ -40,7 +41,7 @@ function PortForm({ parentIndex, type }: PortFormProps) {
             {...getInputProps(`${path}.${portIndex}.port`)}
           />
           <DeleteElementButton
-            onClick={() => removePort(path, portIndex, setFieldValue, ports)}
+            onClick={() => removePort(path, setFieldValue, ports, portIndex)}
           />
         </div>
       ))}

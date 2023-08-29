@@ -1,12 +1,12 @@
-import { NetworkPolicyFull, Policy } from "@/types";
+import { Policy } from "@/types";
 import { addPolicy, useFormContext } from "@/utils/form";
-import { Path } from "@/utils/path";
+import { NetworkPolicyPathExtract } from "@/utils/path";
 import NewElementButton from "./NewElementButton";
 import PolicySelectorForm from "./PolicySelectorForm";
 
 type PoliciesFormProps = {
   title: string;
-  path: Path<NetworkPolicyFull>;
+  path: NetworkPolicyPathExtract<`${string}.from` | `${string}.to`>;
 };
 
 function PoliciesForm({ title, path }: PoliciesFormProps) {
@@ -20,7 +20,7 @@ function PoliciesForm({ title, path }: PoliciesFormProps) {
         <h4 className="font-semibold text-slate-900">{title}</h4>
 
         <NewElementButton
-          onClick={() => addPolicy(policies, setFieldValue, path)}
+          onClick={() => addPolicy(path, setFieldValue, policies)}
         />
       </div>
       {policies.map((_, index) => (

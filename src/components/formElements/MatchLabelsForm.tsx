@@ -1,13 +1,12 @@
 import { useClusterStore } from "@/store/clusterStore";
-import { NetworkPolicyFull } from "@/types";
 import { addLabel, removeLabel, useFormContext } from "@/utils/form";
-import { Path } from "@/utils/path";
+import { NetworkPolicyPathExtract } from "@/utils/path";
 import { Autocomplete } from "@mantine/core";
 import DeleteElementButton from "./DeleteElementButton";
 import NewElementButton from "./NewElementButton";
 
 type MatchLabelsFormProps = {
-  path: Path<NetworkPolicyFull>;
+  path: NetworkPolicyPathExtract<`${string}.matchLabels`>;
   LabelSource?: "pod" | "namespace";
 };
 
@@ -21,14 +20,12 @@ function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
   // labels are a Record<string, string>, so we need to convert it to an array
   const labelsArray = Object.entries(labels || {});
 
-  // TODO: this breaks when key has a dot in it (e.g. "app.kubernetes.io/name")
-  // change either the key or the value of a label
   function onChange(value: string, type: "key" | "value", key: string) {
-    console.log(value, type, key);
+    const temp = { ...labels };
     if (type === "value") {
-      setFieldValue(`${path}.${key}`, value);
+      temp[key] = value;
+      setFieldValue(path, temp);
     } else {
-      const temp = { ...labels };
       temp[value] = temp[key];
       delete temp[key];
       setFieldValue(path, temp);
@@ -40,7 +37,7 @@ function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
       <div className="flex justify-between pb-2">
         <h4 className="font-semibold text-slate-900">MatchLabels</h4>
         <NewElementButton
-          onClick={() => addLabel(labels || {}, setFieldValue, path)}
+          onClick={() => addLabel(path, setFieldValue, labels || {})}
         />
       </div>
       <div>
@@ -66,7 +63,7 @@ function MatchLabelsForm({ path, LabelSource = "pod" }: MatchLabelsFormProps) {
               />
 
               <DeleteElementButton
-                onClick={() => removeLabel(labels!, setFieldValue, path, key)}
+                onClick={() => removeLabel(path, setFieldValue, labels!, key)}
               />
             </div>
           );

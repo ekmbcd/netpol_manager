@@ -1,13 +1,15 @@
-import { NetworkPolicyFull, SelectorType } from "@/types";
+import { SelectorType } from "@/types";
 import { changeSelector, useFormContext } from "@/utils/form";
-import { Path } from "@/utils/path";
+import { NetworkPolicyPathExtract } from "@/utils/path";
 import { Select } from "@mantine/core";
 import MatchExpressions from "./MatchExpressionsForm";
 import MatchLabelsForm from "./MatchLabelsForm";
 
 type SelectorFormProps = {
   title: string;
-  path: Path<NetworkPolicyFull>;
+  path: NetworkPolicyPathExtract<
+    `${string}.podSelector` | `${string}.namespaceSelector`
+  >;
   LabelSource?: "pod" | "namespace";
 };
 
@@ -29,9 +31,9 @@ function SelectorForm({ title, path, LabelSource = "pod" }: SelectorFormProps) {
   function onSelectorChange(newType: SelectorType) {
     // if the user selects the same option, reset the selector
     if (newType === selectorType) {
-      changeSelector(null, path, setFieldValue);
+      changeSelector(path, setFieldValue, null);
     }
-    changeSelector(newType, path, setFieldValue);
+    changeSelector(path, setFieldValue, newType);
   }
 
   return (
@@ -54,16 +56,14 @@ function SelectorForm({ title, path, LabelSource = "pod" }: SelectorFormProps) {
       {(selectorType === SelectorType.MatchLabels ||
         selectorType === SelectorType.Both) && (
         <MatchLabelsForm
-          path={`${path}.matchLabels` as Path<NetworkPolicyFull>}
+          path={`${path}.matchLabels`}
           LabelSource={LabelSource}
         />
       )}
 
       {(selectorType === SelectorType.MatchExpressions ||
         selectorType === SelectorType.Both) && (
-        <MatchExpressions
-          path={`${path}.matchExpressions` as Path<NetworkPolicyFull>}
-        />
+        <MatchExpressions path={`${path}.matchExpressions`} />
       )}
     </div>
   );

@@ -1,16 +1,17 @@
-import { NetworkPolicyFull, Policy, PolicySelectorType } from "@/types";
+import { NamespaceSelector, Policy, PolicySelectorType } from "@/types";
 import {
   changePolicySelector,
   removePolicy,
+  togglePodSelectorToNamespaceSelector,
   useFormContext,
 } from "@/utils/form";
-import { Path } from "@/utils/path";
-import { Select } from "@mantine/core";
+import { NetworkPolicyPathExtract } from "@/utils/path";
+import { Checkbox, Select } from "@mantine/core";
 import DeleteElementButton from "./DeleteElementButton";
 import SelectorForm from "./SelectorForm";
 
 type PolicySelectorFormProps = {
-  path: Path<NetworkPolicyFull>;
+  path: NetworkPolicyPathExtract<`${string}.from` | `${string}.to`>;
   index: number;
 };
 
@@ -32,11 +33,7 @@ function PolicySelectorForm({ path, index }: PolicySelectorFormProps) {
     if (newType === initialPolicy) {
       return false;
     }
-    changePolicySelector(
-      newType,
-      `${path}.${index}` as Path<NetworkPolicyFull>,
-      setFieldValue
-    );
+    changePolicySelector(`${path}.${index}`, setFieldValue, newType);
   }
 
   return (
@@ -55,26 +52,49 @@ function PolicySelectorForm({ path, index }: PolicySelectorFormProps) {
           checkIconPosition="right"
         />
         <DeleteElementButton
-          onClick={() => removePolicy(policies, setFieldValue, path, index)}
+          onClick={() => removePolicy(path, setFieldValue, policies, index)}
         />
       </div>
 
       {initialPolicy === PolicySelectorType.PodSelector && (
         <SelectorForm
           title="Pod Selector"
-          path={`${path}.${index}.podSelector` as Path<NetworkPolicyFull>}
+          path={`${path}.${index}.podSelector`}
           LabelSource="pod"
         />
       )}
 
       {initialPolicy === PolicySelectorType.NamespaceSelector && (
-        <SelectorForm
-          title="Namespace Selector"
-          path={`${path}.${index}.namespaceSelector` as Path<NetworkPolicyFull>}
-          LabelSource="namespace"
-        />
-      )}
+        <>
+          <SelectorForm
+            title="Namespace Selector"
+            path={`${path}.${index}.namespaceSelector`}
+            LabelSource="namespace"
+          />
+          <Checkbox
+            className="pb-2"
+            label="Add podSelector"
+            checked={"podSelector" in (policy as NamespaceSelector)}
+            onChange={(e) =>
+              togglePodSelectorToNamespaceSelector(
+                `${path}.${index}`,
+                setFieldValue,
+                policy as NamespaceSelector,
+                e.currentTarget.checked
+              )
+            }
+          />
 
+          {"podSelector" in (policy as NamespaceSelector) && (
+            <SelectorForm
+              title="Pod Selector"
+              path={`${path}.${index}.podSelector`}
+              LabelSource="pod"
+            />
+          )}
+        </>
+      )}
+      {/* TODO: add ipblock */}
       {initialPolicy === PolicySelectorType.ipBlock && <div>ipblock form</div>}
     </div>
   );

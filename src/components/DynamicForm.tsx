@@ -2,6 +2,7 @@ import { useClusterStore } from "@/store/clusterStore";
 import { FormProvider, useForm } from "@/utils/form";
 import { Button } from "@mantine/core";
 import { useEffect } from "react";
+import EgressForm from "./formElements/EgressForm";
 import IngressForm from "./formElements/IngressForm";
 import MetadataForm from "./formElements/MetadataForm";
 import PolicyTypesForm from "./formElements/PolicyTypesForm";
@@ -42,7 +43,7 @@ function DynamicForm() {
       >
         <MetadataForm />
 
-        <div className="pl-2 border-l-2 border-slate-300 mb-4">
+        <div className="mb-4 border-l-2 border-slate-300 pl-2">
           <h3 className="text-lg font-semibold">Spec</h3>
 
           <SelectorForm title="Pod Selector" path="spec.podSelector" />
@@ -50,6 +51,8 @@ function DynamicForm() {
           <PolicyTypesForm />
 
           <IngressForm />
+
+          <EgressForm />
         </div>
         <Button variant="default" type="submit">
           Submit
