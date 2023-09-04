@@ -8,6 +8,7 @@ import {
 import { NetworkPolicyPathExtract } from "@/utils/path";
 import { Checkbox, Select } from "@mantine/core";
 import DeleteElementButton from "./DeleteElementButton";
+import IpBlockForm from "./IpBlockForm";
 import SelectorForm from "./SelectorForm";
 
 type PolicySelectorFormProps = {
@@ -94,8 +95,9 @@ function PolicySelectorForm({ path, index }: PolicySelectorFormProps) {
           )}
         </>
       )}
-      {/* TODO: add ipblock */}
-      {initialPolicy === PolicySelectorType.ipBlock && <div>ipblock form</div>}
+      {initialPolicy === PolicySelectorType.ipBlock && (
+        <IpBlockForm path={`${path}.${index}.ipBlock`} />
+      )}
     </div>
   );
 }

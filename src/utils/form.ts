@@ -130,7 +130,6 @@ export function changePolicySelector(
         podSelector: {},
       });
       break;
-    // TODO: manage both namespaceSelector and optional podSelector
     case PolicySelectorType.NamespaceSelector:
       setFieldValue(path, {
         namespaceSelector: {},
@@ -138,7 +137,9 @@ export function changePolicySelector(
       break;
     case PolicySelectorType.ipBlock:
       setFieldValue(path, {
-        ipBlock: {},
+        ipBlock: {
+          cidr: "",
+        },
       });
       break;
   }

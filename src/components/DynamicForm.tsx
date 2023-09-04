@@ -40,6 +40,7 @@ function DynamicForm() {
           e.preventDefault();
           console.log(form.values);
         }}
+        className="pr-2"
       >
         <MetadataForm />
 
