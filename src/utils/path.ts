@@ -3,20 +3,26 @@ import { NetworkPolicyFull } from "@/types";
 type Primitive = null | undefined | string | number | boolean | symbol | bigint;
 
 type PathImpl<
-  K extends string | number,
-  V,
+  Key extends string | number,
+  Value,
   TraversedTypes,
-> = V extends Primitive
-  ? `${K}`
-  : TraversedTypes extends V
-  ? `${K}`
-  : `${K}` | `${K}.${PathInternal<V, TraversedTypes | V>}`;
+> = Value extends Primitive
+  ? `${Key}`
+  : TraversedTypes extends Value
+  ? `${Key}`
+  : `${Key}` | `${Key}.${PathInternal<Value, TraversedTypes | Value>}`;
 
-type PathInternal<T, TraversedTypes = T> = T extends ReadonlyArray<infer V>
-  ? PathImpl<number, V, TraversedTypes>
+type PathInternal<Parent, TraversedTypes = Parent> = Parent extends Array<
+  infer ArrayElement
+>
+  ? PathImpl<number, ArrayElement, TraversedTypes>
   : {
-      [K in keyof T]-?: PathImpl<K & string, T[K], TraversedTypes>;
-    }[keyof T];
+      [Key in keyof Parent]-?: PathImpl<
+        Key & string,
+        Parent[Key],
+        TraversedTypes
+      >;
+    }[keyof Parent];
 
 // Path<T> will be a union of all possible paths in T as a string literal type.
 // For example:
@@ -29,9 +35,12 @@ type PathInternal<T, TraversedTypes = T> = T extends ReadonlyArray<infer V>
 // };
 // type FooPath = Path<Foo>;
 // type FooPath = "a" | "b" | `b.${number}` | `b.${number}.c` | `b.${number}.d`
-type Path<T> = T extends any ? PathInternal<T> : never;
+type Path<T> = T extends object ? PathInternal<T> : never;
 
 export type NetworkPolicyPath = Path<NetworkPolicyFull>;
 
-// extract from NetworkPolicyPath all paths that match T
-export type NetworkPolicyPathExtract<T> = Extract<NetworkPolicyPath, T>;
+// extract from NetworkPolicyPath all paths that match PathString
+export type NetworkPolicyPathExtract<PathString extends string> = Extract<
+  NetworkPolicyPath,
+  PathString
+>;

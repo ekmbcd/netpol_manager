@@ -5,9 +5,7 @@ import NewElementButton from "./NewElementButton";
 import PoliciesForm from "./PoliciesForm";
 import PortForm from "./PortForm";
 
-type IngressFormProps = {};
-
-function IngressForm({}: IngressFormProps) {
+function IngressForm() {
   const { values, setFieldValue } = useFormContext();
 
   if (!values.spec.policyTypes.includes(PolicyType.Ingress)) {

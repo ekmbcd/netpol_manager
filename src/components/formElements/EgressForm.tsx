@@ -5,9 +5,7 @@ import NewElementButton from "./NewElementButton";
 import PoliciesForm from "./PoliciesForm";
 import PortForm from "./PortForm";
 
-type EgressFormProps = {};
-
-function EgressForm({}: EgressFormProps) {
+function EgressForm() {
   const { values, setFieldValue } = useFormContext();
 
   if (!values.spec.policyTypes.includes(PolicyType.Egress)) {

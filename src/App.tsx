@@ -22,7 +22,7 @@ function App() {
   }, []);
 
   return (
-    <div style={{ height: "750px" }} className="p-2">
+    <div style={{ height: "740px" }} className="p-2">
       <Tabs
         value={view}
         onChange={setSelectedView}

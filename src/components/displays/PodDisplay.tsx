@@ -20,11 +20,6 @@ function PodDisplay() {
     }
   }, [selectedPod]);
 
-  if (!selectedPod) {
-    console.error("No pod selected - should not happen!");
-    return null;
-  }
-
   const nodes: Node[] = [];
 
   const nodeTypes = useMemo(
@@ -45,26 +40,33 @@ function PodDisplay() {
 
   const selectedPodObj = pods.find((pod) => pod.uid === selectedPod);
 
-  if (!selectedPodObj) {
-    console.error("No pod selected - should not happen!");
-    return null;
-  }
-
   const selectedNode = {
-    id: selectedPod,
+    id: selectedPod || "null",
     type: "selectedPodNode",
     data: selectedPodObj,
     position: { x: 0, y: 0 },
   };
 
-  const left = generatePodNodes(-460, selectedPodObj.ingress);
-  const right = generatePodNodes(460, selectedPodObj.egress);
+  const left = generatePodNodes(-460, selectedPodObj?.ingress);
+  const right = generatePodNodes(460, selectedPodObj?.egress);
 
-  nodes.push(selectedNode, ...left, ...right);
+  nodes.push(selectedNode!, ...left, ...right);
 
   const edges = useMemo(() => {
+    if (!selectedNode) {
+      return [];
+    }
     return generateEdges(selectedNode, left, right);
   }, [selectedPodObj]);
+
+  if (!selectedPod) {
+    console.error("No pod selected - should not happen!");
+    return null;
+  }
+  if (!selectedPodObj) {
+    console.error("No pod selected - should not happen!");
+    return null;
+  }
 
   return (
     <div className="flex-grow">

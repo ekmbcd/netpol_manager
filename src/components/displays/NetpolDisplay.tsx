@@ -32,11 +32,6 @@ function NetpolDisplay() {
     }
   }, [activeNetpol]);
 
-  if (!activeNetpol) {
-    console.error("No netpol selected - should not happen!");
-    return null;
-  }
-
   const nodes: Node[] = [];
 
   const nodeTypes = useMemo(
@@ -58,13 +53,17 @@ function NetpolDisplay() {
   // only consider pods in the same namespace as the selected netpol
   const filteredPods = useMemo(() => {
     return pods.filter((pod) => {
-      return pod.namespace === activeNetpol.metadata.namespace;
+      return pod.namespace === activeNetpol?.metadata.namespace;
     });
   }, [activeNetpol]);
 
   const selectedPods = useMemo(() => {
+    if (!activeNetpol?.spec.podSelector) {
+      return [];
+    }
+
     return selectPodReferencesFromSelector(
-      activeNetpol.spec.podSelector,
+      activeNetpol?.spec.podSelector,
       filteredPods
     );
   }, [activeNetpol]);
@@ -80,11 +79,11 @@ function NetpolDisplay() {
 
   // TODO: memo left, right and edges together
   const ingressPods = useMemo(() => {
-    if (!activeNetpol.spec.policyTypes.includes(PolicyType.Ingress)) {
+    if (!activeNetpol?.spec.policyTypes.includes(PolicyType.Ingress)) {
       return undefined;
     }
 
-    if (!activeNetpol.spec.ingress) {
+    if (!activeNetpol?.spec.ingress) {
       return [];
     }
 
@@ -97,11 +96,11 @@ function NetpolDisplay() {
   const left = generatePodNodes(-500, ingressPods);
 
   const egressPods = useMemo(() => {
-    if (!activeNetpol.spec.policyTypes.includes(PolicyType.Egress)) {
+    if (!activeNetpol?.spec.policyTypes.includes(PolicyType.Egress)) {
       return undefined;
     }
 
-    if (!activeNetpol.spec.egress) {
+    if (!activeNetpol?.spec.egress) {
       return [];
     }
 
@@ -118,6 +117,11 @@ function NetpolDisplay() {
   const edges = useMemo(() => {
     return generateEdges(selectedPodsGroup, left, right);
   }, [activeNetpol]);
+
+  if (!activeNetpol) {
+    console.error("No netpol selected - should not happen!");
+    return null;
+  }
 
   return (
     <div className="flex-grow">
