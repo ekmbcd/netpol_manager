@@ -2,7 +2,7 @@ import { NetworkPolicyFull } from "@/types";
 
 type Primitive = null | undefined | string | number | boolean | symbol | bigint;
 
-type PathImpl<
+type FindKey<
   Key extends string | number,
   Value,
   TraversedTypes,
@@ -10,14 +10,14 @@ type PathImpl<
   ? `${Key}`
   : TraversedTypes extends Value
   ? `${Key}`
-  : `${Key}` | `${Key}.${PathInternal<Value, TraversedTypes | Value>}`;
+  : `${Key}` | `${Key}.${FindPaths<Value, TraversedTypes | Value>}`;
 
-type PathInternal<Parent, TraversedTypes = Parent> = Parent extends Array<
+type FindPaths<Parent, TraversedTypes = Parent> = Parent extends Array<
   infer ArrayElement
 >
-  ? PathImpl<number, ArrayElement, TraversedTypes>
+  ? FindKey<number, ArrayElement, TraversedTypes>
   : {
-      [Key in keyof Parent]-?: PathImpl<
+      [Key in keyof Parent]-?: FindKey<
         Key & string,
         Parent[Key],
         TraversedTypes
@@ -35,7 +35,7 @@ type PathInternal<Parent, TraversedTypes = Parent> = Parent extends Array<
 // };
 // type FooPath = Path<Foo>;
 // type FooPath = "a" | "b" | `b.${number}` | `b.${number}.c` | `b.${number}.d`
-type Path<T> = T extends object ? PathInternal<T> : never;
+type Path<T> = T extends object ? FindPaths<T> : never;
 
 export type NetworkPolicyPath = Path<NetworkPolicyFull>;
 
